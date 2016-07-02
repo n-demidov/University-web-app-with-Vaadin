@@ -7,6 +7,8 @@ A simple web-app with Vaadin framework. Application allows edit and filter stude
 
 Features: UI at Vaadin framework; HSQLDB (in-process mode).
 
+`create_tables.sql` file contains scripts for creating tables in HSQLDB.
+
 Build and Run
 -------------
 
