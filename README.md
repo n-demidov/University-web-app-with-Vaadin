@@ -3,7 +3,7 @@
 About
 -----
 
-A simple web-app with Vaadin framework. Application allows edit and filter students and groups. 
+A simple web-app with Vaadin framework. Application allows edit and filter students and groups. Also Java 1.8, JDBC, Hibernate Validator (for bean validation).
 
 Features: UI at Vaadin framework; HSQLDB (in-process mode).
 
