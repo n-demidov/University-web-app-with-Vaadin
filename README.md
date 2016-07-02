@@ -1,6 +1,8 @@
 #University (web-app with Vaadin)
 A simple web-app with Vaadin framework
 
+
+
 Build and Run
 -------------
 
@@ -12,4 +14,9 @@ Build and Run
 
 2. Open `http://localhost:8080` in a web browser.
 
-Used Vaadin framework, HSQLDB (in-process mode).
+About
+-----
+
+Application allows add, edit, filter students and groups. 
+
+Features: UI at Vaadin framework; HSQLDB (in-process mode).
