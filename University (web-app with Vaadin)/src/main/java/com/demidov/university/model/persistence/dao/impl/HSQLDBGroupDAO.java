@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.demidov.university.model.exceptions.persistence.NoSuchPersistedEntityException;
@@ -16,9 +15,9 @@ import com.demidov.university.model.persistence.entity.Group;
 
 public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 
+	private static final String STUDENTS_TABLE = "students";
 	private static final String GROUP_ID = "id", GROUP_NUMBER = "group_number", GROUP_FACULTY_NAME = "faculty_name";
-	private static final String FK_STUDENT_TO_GROUP = "fk_student_group";
-	private static final String FK_STUDENT_TO_GROUP_ERR_MSG = "Группа не может быть удалена, так как на неё ссылается 1 или более студентов";
+	private static final String DELETE_GROUP_WHEN_STUDENTS_REFER_ERR_MSG = "Группа не может быть удалена, так как на неё ссылается 1 или более студентов";
 	
 	private static final String SELECT = "SELECT g.id, g.group_number, g.faculty_name FROM groups g";
 	private static final String SELECT_ONE = SELECT + " WHERE g.id = ?";
@@ -165,19 +164,12 @@ public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 			statement.setLong(1, id);
 			statement.execute();
 		} catch (final SQLException e) {
-			processSQLException(e);
+			processDeleteException(e);
 		}
 	}
 	
 	@Override
 	protected void processSQLException(final SQLException e) throws PersistException {
-		final String exc = e.getLocalizedMessage().toLowerCase();
-		
-		// If FK_TO_GROUP exception - make it readable format
-		if (exc.contains(FK_STUDENT_TO_GROUP.toLowerCase())) {
-			throw new PersistException(FK_STUDENT_TO_GROUP_ERR_MSG);
-		}
-		
 		super.processSQLException(e);
 	}
 
@@ -190,6 +182,20 @@ public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 		group.setFacultyName(rs.getString(GROUP_FACULTY_NAME));
 
 		return group;
+	}
+	
+	// Handle exception on delete method
+	private void processDeleteException(final SQLException e) throws PersistException {
+		// If one or more students refer to group - show readable message. Else - show standard message.
+		final String exc = e.getLocalizedMessage().toLowerCase();
+		
+		if (isConstraintViolation(e)) {
+			if (exc.contains(STUDENTS_TABLE.toLowerCase())) {
+				throw new PersistException(DELETE_GROUP_WHEN_STUDENTS_REFER_ERR_MSG);
+			}
+	    }
+		
+		processSQLException(e);
 	}
 	
 }

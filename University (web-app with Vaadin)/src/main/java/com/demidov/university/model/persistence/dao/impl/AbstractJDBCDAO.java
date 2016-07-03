@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,7 @@ import javax.validation.ValidatorFactory;
 
 public abstract class AbstractJDBCDAO {
 
+	private static final String INTEGRITY_CONSTRAINT_VIOLATION_CODE = "23";
 	private static final String PEPRSIST_ERR_MSG = "Возникла ошибка при обращении к базе данных. Пожалуйста, проверьте входные параметры.";
 	protected static final String UNEXPECTED_POINT_EXECUTION = "Unexpected point execution"; 
 	
@@ -73,6 +75,15 @@ public abstract class AbstractJDBCDAO {
 	protected void processSQLException(final SQLException e) throws PersistException {
 		logger.log(Level.SEVERE, null, e);
 		throw new PersistException(PEPRSIST_ERR_MSG);
+	}
+	
+	/**
+	 * Return true if SQLException is Integrity Constraint Violation Exception
+	 * @param e
+	 * @return
+	 */
+	protected static boolean isConstraintViolation(final SQLException e) {
+	    return e.getSQLState().startsWith(INTEGRITY_CONSTRAINT_VIOLATION_CODE);
 	}
 
 }
