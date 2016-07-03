@@ -38,6 +38,7 @@ public class GroupsView extends AbstractView<Group> {
 	@Override
     public void enter(final ViewChangeEvent event) {
 		super.enter(event);
+		Page.getCurrent().setTitle(PAGE_TITLE);
     }
 	
 	/**
@@ -91,7 +92,6 @@ public class GroupsView extends AbstractView<Group> {
 	}
 
  	private void initLayouts() {
- 		Page.getCurrent().setTitle(PAGE_TITLE);
  		editDialogWindow.setModal(true);
  		
  		gridObjects.setColumns(NUMBER_COLUMN, FACULTY_NAME_COLUMN);

@@ -16,7 +16,6 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public abstract class AbstractView<T> extends VerticalLayout implements View, UpdatableUI<T> {
 
-	protected static final String PAGE_TITLE = "Abstract view";
 	private static final String ADD = "Добавить";
 	private static final String CHANGE = "Изменить";
 	private static final String DELETE = "Удалить";
@@ -83,7 +82,6 @@ public abstract class AbstractView<T> extends VerticalLayout implements View, Up
 	}
 
 	private void initStyles() {
-		Page.getCurrent().setTitle(PAGE_TITLE);
 		setSizeFull();
 
 		gridObjects.setSizeFull();

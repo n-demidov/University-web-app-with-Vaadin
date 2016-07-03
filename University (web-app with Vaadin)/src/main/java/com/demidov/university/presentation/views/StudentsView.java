@@ -69,6 +69,7 @@ public class StudentsView extends AbstractView<Student> {
 	@Override
 	public void enter(final ViewChangeEvent event) {
 		super.enter(event);
+		Page.getCurrent().setTitle(PAGE_TITLE);
 	}
 
 	/**
@@ -137,7 +138,6 @@ public class StudentsView extends AbstractView<Student> {
 	}
 
 	private void initLayouts() {
-		Page.getCurrent().setTitle(PAGE_TITLE);
 		editDialogWindow.setModal(true);
 
 		gridObjects.setColumns(NAME_COLUMN, LASTNAME_COLUMN, MIDDLENAME_COLUMN, BIRTH_DATE_COLUMN, GROUP_NUMBER_COLUMN,

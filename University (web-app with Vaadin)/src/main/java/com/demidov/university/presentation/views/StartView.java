@@ -2,6 +2,7 @@ package com.demidov.university.presentation.views;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.Page;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -11,6 +12,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class StartView extends VerticalLayout implements View {
 
+	private static final String PAGE_TITLE = "Главная - Institute";
 	private static final String WELCOME_PHRASE = "Добро пожаловать на главную страницу Online Institute";
 	private static final String DESCRIPTION
 		= "Для перехода на страницы студентов и групп воспользуйтесь пунктами меню вверху экрана";
@@ -29,6 +31,7 @@ public class StartView extends VerticalLayout implements View {
 		Notification.show(
 				WELCOME_PHRASE,
 				Notification.Type.HUMANIZED_MESSAGE);
+		Page.getCurrent().setTitle(PAGE_TITLE);
 	}
 
 }
