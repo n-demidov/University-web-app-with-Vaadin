@@ -6,7 +6,7 @@ import com.demidov.university.model.exceptions.persistence.PersistException;
 import com.demidov.university.model.persistence.dao.filter.StudentFilterParams;
 import com.demidov.university.model.persistence.entity.Student;
 
-public interface StudentDAO extends GeneralDAO<Student> {
+public interface StudentDao extends GeneralDao<Student, Long> {
 
 	public List<Student> filter(final StudentFilterParams filterParams) throws PersistException;
 	

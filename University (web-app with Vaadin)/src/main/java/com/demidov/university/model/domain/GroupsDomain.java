@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import com.demidov.university.model.exceptions.persistence.PersistException;
 import com.demidov.university.model.exceptions.persistence.ValidException;
-import com.demidov.university.model.persistence.dao.interfaces.GroupDAO;
+import com.demidov.university.model.persistence.dao.interfaces.GroupDao;
 import com.demidov.university.model.persistence.entity.Group;
 import com.demidov.university.model.persistence.factory.impl.HsqldbDAOFactory;
 
@@ -15,7 +15,7 @@ import com.demidov.university.model.persistence.factory.impl.HsqldbDAOFactory;
 public class GroupsDomain {
 
 	private final HsqldbDAOFactory daoFactory;
-	private final GroupDAO groupDAO;
+	private final GroupDao groupDAO;
 
 	private static GroupsDomain instance;
 	private static final Logger logger = Logger.getLogger(GroupsDomain.class.getName());

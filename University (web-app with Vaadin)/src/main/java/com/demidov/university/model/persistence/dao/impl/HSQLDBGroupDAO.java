@@ -10,10 +10,10 @@ import java.util.logging.Logger;
 import com.demidov.university.model.exceptions.persistence.NoSuchPersistedEntityException;
 import com.demidov.university.model.exceptions.persistence.PersistException;
 import com.demidov.university.model.exceptions.persistence.ValidException;
-import com.demidov.university.model.persistence.dao.interfaces.GroupDAO;
+import com.demidov.university.model.persistence.dao.interfaces.GroupDao;
 import com.demidov.university.model.persistence.entity.Group;
 
-public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
+public class HSQLDBGroupDao extends AbstractJDBCDao implements GroupDao {
 
 	private static final String STUDENTS_TABLE = "students";
 	private static final String GROUP_ID = "id", GROUP_NUMBER = "group_number", GROUP_FACULTY_NAME = "faculty_name";
@@ -27,16 +27,16 @@ public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 
 	private static final String NO_SUCH_ENTITY_IN_DB = "В базе данных нет группы с id = %d";
 
-	private static HSQLDBGroupDAO instance;
-	private static final Logger logger = Logger.getLogger(HSQLDBGroupDAO.class.getName());
+	private static HSQLDBGroupDao instance;
+	private static final Logger logger = Logger.getLogger(HSQLDBGroupDao.class.getName());
 
-	public static synchronized HSQLDBGroupDAO getInstance() {
+	public static synchronized HSQLDBGroupDao getInstance() {
 		if (instance == null)
-			instance = new HSQLDBGroupDAO();
+			instance = new HSQLDBGroupDao();
 		return instance;
 	}
 
-	private HSQLDBGroupDAO() {
+	private HSQLDBGroupDao() {
 		super();
 	}
 
@@ -71,18 +71,20 @@ public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 	 * @throws NoSuchPersistedEntityException.library.exceptions.db.NoSuchEntityInDB
 	 */
 	@Override
-	public Group get(final long id) throws NoSuchPersistedEntityException, PersistException {
+	public Group get(final Long pk) throws NoSuchPersistedEntityException, PersistException {
+		assert pk != null;
+		
 		ResultSet rs = null;
 
 		try (final PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {
-			statement.setLong(1, id);
+			statement.setLong(1, pk);
 
 			rs = statement.executeQuery();
 
 			if (rs.next()) {
 				return readResultSet(rs);
 			} else {
-				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, id));
+				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
 			}
 		} catch (final SQLException e) {
 			processSQLException(e);
@@ -154,23 +156,20 @@ public class HSQLDBGroupDAO extends AbstractJDBCDAO implements GroupDAO {
 
 	/**
 	 * Delete record about object from DB
-	 * @param id
+	 * @param pk
 	 * @throws PersistException 
 	 * @throws java.sql.SQLException
 	 */
 	@Override
-	public void delete(final long id) throws PersistException {
+	public void delete(final Long pk) throws PersistException {
+		assert pk != null;
+		
 		try (final PreparedStatement statement = connection.prepareStatement(DELETE)) {
-			statement.setLong(1, id);
+			statement.setLong(1, pk);
 			statement.execute();
 		} catch (final SQLException e) {
 			processDeleteException(e);
 		}
-	}
-	
-	@Override
-	protected void processSQLException(final SQLException e) throws PersistException {
-		super.processSQLException(e);
 	}
 
 	// Read and create instance of object from ResultSet object

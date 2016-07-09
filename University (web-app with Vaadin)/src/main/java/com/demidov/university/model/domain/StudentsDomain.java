@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import com.demidov.university.model.exceptions.persistence.PersistException;
 import com.demidov.university.model.exceptions.persistence.ValidException;
 import com.demidov.university.model.persistence.dao.filter.StudentFilterParams;
-import com.demidov.university.model.persistence.dao.interfaces.StudentDAO;
+import com.demidov.university.model.persistence.dao.interfaces.StudentDao;
 import com.demidov.university.model.persistence.entity.Student;
 import com.demidov.university.model.persistence.factory.impl.HsqldbDAOFactory;
 
@@ -16,7 +16,7 @@ import com.demidov.university.model.persistence.factory.impl.HsqldbDAOFactory;
 public class StudentsDomain {
 
 	private final HsqldbDAOFactory daoFactory;
-	private final StudentDAO studentDAO;
+	private final StudentDao studentDAO;
 	
 	private static StudentsDomain instance;
 	private static final Logger logger = Logger.getLogger(StudentsDomain.class.getName());

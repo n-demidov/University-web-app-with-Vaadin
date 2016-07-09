@@ -2,10 +2,10 @@ package com.demidov.university.model.persistence.factory.impl;
 
 import java.util.logging.Logger;
 
-import com.demidov.university.model.persistence.dao.impl.HSQLDBGroupDAO;
-import com.demidov.university.model.persistence.dao.impl.HSQLDBStudentDAO;
-import com.demidov.university.model.persistence.dao.interfaces.GroupDAO;
-import com.demidov.university.model.persistence.dao.interfaces.StudentDAO;
+import com.demidov.university.model.persistence.dao.impl.HSQLDBGroupDao;
+import com.demidov.university.model.persistence.dao.impl.HSQLDBStudentDao;
+import com.demidov.university.model.persistence.dao.interfaces.GroupDao;
+import com.demidov.university.model.persistence.dao.interfaces.StudentDao;
 import com.demidov.university.model.persistence.factory.interfaces.DAOFactory;
 
 public class HsqldbDAOFactory implements DAOFactory {
@@ -24,13 +24,13 @@ public class HsqldbDAOFactory implements DAOFactory {
 	}
 
 	@Override
-	public StudentDAO getStudentDAO() {
-		return HSQLDBStudentDAO.getInstance();
+	public StudentDao getStudentDAO() {
+		return HSQLDBStudentDao.getInstance();
 	}
 
 	@Override
-	public GroupDAO getGroupDAO() {
-		return HSQLDBGroupDAO.getInstance();
+	public GroupDao getGroupDAO() {
+		return HSQLDBGroupDao.getInstance();
 	}
 	
 }

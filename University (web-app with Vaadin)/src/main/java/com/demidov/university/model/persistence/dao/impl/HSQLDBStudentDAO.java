@@ -12,11 +12,11 @@ import com.demidov.university.model.exceptions.persistence.NoSuchPersistedEntity
 import com.demidov.university.model.exceptions.persistence.PersistException;
 import com.demidov.university.model.exceptions.persistence.ValidException;
 import com.demidov.university.model.persistence.dao.filter.StudentFilterParams;
-import com.demidov.university.model.persistence.dao.interfaces.StudentDAO;
+import com.demidov.university.model.persistence.dao.interfaces.StudentDao;
 import com.demidov.university.model.persistence.entity.Group;
 import com.demidov.university.model.persistence.entity.Student;
 
-public class HSQLDBStudentDAO extends AbstractJDBCDAO implements StudentDAO{
+public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
 	
 	private static final String STUDENT_ID = "id", STUDENT_NAME = "name", STUDENT_LAST_NAME = "last_name",
 			STUDENT_MIDDLE_NAME = "middle_name", STUDENT_BIRTH_DATE = "birth_date", STUDENT_GROUP_ID = "group_id";
@@ -41,16 +41,16 @@ public class HSQLDBStudentDAO extends AbstractJDBCDAO implements StudentDAO{
 	
 	private static final String NO_SUCH_ENTITY_IN_DB = "В базе данных нет студента с id = %d";
 
-	private static HSQLDBStudentDAO instance;
-	private static final Logger logger = Logger.getLogger(HSQLDBStudentDAO.class.getName());
+	private static HSQLDBStudentDao instance;
+	private static final Logger logger = Logger.getLogger(HSQLDBStudentDao.class.getName());
 
-	public static synchronized HSQLDBStudentDAO getInstance() {
+	public static synchronized HSQLDBStudentDao getInstance() {
 		if (instance == null)
-			instance = new HSQLDBStudentDAO();
+			instance = new HSQLDBStudentDao();
 		return instance;
 	}
 
-	private HSQLDBStudentDAO() {
+	private HSQLDBStudentDao() {
 		super();
 	}
 
@@ -84,18 +84,20 @@ public class HSQLDBStudentDAO extends AbstractJDBCDAO implements StudentDAO{
 	 * @throws NoSuchPersistedEntityException.library.exceptions.db.NoSuchEntityInDB
 	 */
 	@Override
-	public Student get(final long id) throws NoSuchPersistedEntityException, PersistException {
+	public Student get(final Long pk) throws NoSuchPersistedEntityException, PersistException {
+		assert pk != null;
+		
 		ResultSet rs = null;
 
 		try (final PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {
-			statement.setLong(1, id);
+			statement.setLong(1, pk);
 
 			rs = statement.executeQuery();
 
 			if (rs.next()) {
 				return readResultSet(rs);
 			} else {
-				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, id));
+				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
 			}
 		} catch (final SQLException e) {
 			processSQLException(e);
@@ -240,18 +242,15 @@ public class HSQLDBStudentDAO extends AbstractJDBCDAO implements StudentDAO{
 	 * @throws java.sql.SQLException
 	 */
 	@Override
-	public void delete(final long id) throws PersistException {
+	public void delete(final Long pk) throws PersistException {
+		assert pk != null;
+		
 		try (final PreparedStatement statement = connection.prepareStatement(DELETE)) {
-			statement.setLong(1, id);
+			statement.setLong(1, pk);
 			statement.execute();
 		} catch (final SQLException e) {
 			processSQLException(e);
 		}
-	}
-	
-	@Override
-	protected void processSQLException(final SQLException e) throws PersistException {
-		super.processSQLException(e);
 	}
 
 	// Read and create instance of object from ResultSet object
