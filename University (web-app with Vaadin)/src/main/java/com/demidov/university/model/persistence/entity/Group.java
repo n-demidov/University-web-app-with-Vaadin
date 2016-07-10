@@ -7,7 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-public class Group implements Serializable, Cloneable {
+public class Group extends GeneralEntity<Long> implements Serializable, Cloneable {
 
 	private Long id;
 
@@ -85,6 +85,11 @@ public class Group implements Serializable, Cloneable {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public Long getPk() {
+		return getId();
 	}
 
 }

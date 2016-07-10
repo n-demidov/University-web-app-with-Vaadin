@@ -13,7 +13,7 @@ import com.demidov.university.model.exceptions.persistence.ValidException;
 import com.demidov.university.model.persistence.dao.interfaces.GroupDao;
 import com.demidov.university.model.persistence.entity.Group;
 
-public class HSQLDBGroupDao extends AbstractJDBCDao implements GroupDao {
+public class HSQLDBGroupDao extends GeneralJDBCDao<Group, Long> implements GroupDao {
 
 	private static final String STUDENTS_TABLE = "students";
 	private static final String GROUP_ID = "id", GROUP_NUMBER = "group_number", GROUP_FACULTY_NAME = "faculty_name";
@@ -21,11 +21,9 @@ public class HSQLDBGroupDao extends AbstractJDBCDao implements GroupDao {
 	
 	private static final String SELECT = "SELECT g.id, g.group_number, g.faculty_name FROM groups g";
 	private static final String SELECT_ONE = SELECT + " WHERE g.id = ?";
-	private static final String UPDATE = "UPDATE groups SET group_number = ?, faculty_name = ? WHERE id = ?";
 	private static final String INSERT = "INSERT INTO groups (group_number, faculty_name) VALUES(?, ?)";
+	private static final String UPDATE = "UPDATE groups SET group_number = ?, faculty_name = ? WHERE id = ?";
 	private static final String DELETE = "DELETE FROM groups WHERE id = ?";
-
-	private static final String NO_SUCH_ENTITY_IN_DB = "В базе данных нет группы с id = %d";
 
 	private static HSQLDBGroupDao instance;
 	private static final Logger logger = Logger.getLogger(HSQLDBGroupDao.class.getName());
@@ -40,151 +38,53 @@ public class HSQLDBGroupDao extends AbstractJDBCDao implements GroupDao {
 		super();
 	}
 
-	/**
-	 * Find all objects
-	 * @return
-	 * @throws PersistException 
-	 * @throws SQLException
-	 */
 	@Override
-	public List<Group> getAll() throws PersistException {
-		final List<Group> Groups = new ArrayList<>();
+	protected List<Group> parseResultSet(final ResultSet rs) throws SQLException {
+		final List<Group> groups = new ArrayList<>();
 
-		try (final PreparedStatement statement = connection.prepareStatement(SELECT);
-				final ResultSet rs = statement.executeQuery()) {
-			while (rs.next()) {
-				Groups.add(readResultSet(rs));
-			}
-		} catch (final SQLException e) {
-			processSQLException(e);
+		while (rs.next()) {
+			final Group group = new Group();
+
+			group.setId(rs.getLong(GROUP_ID));
+			group.setNumber(rs.getInt(GROUP_NUMBER));
+			group.setFacultyName(rs.getString(GROUP_FACULTY_NAME));
+
+			groups.add(group);
 		}
 
-		return Groups;
+		return groups;
+	}
+	
+	@Override
+	protected String getSelectQuery() {
+		return SELECT;
 	}
 
-	/**
-	 * Find object with such id in DB
-	 * @param id
-	 * @return
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
-	 * @throws NoSuchPersistedEntityException.library.exceptions.db.NoSuchEntityInDB
-	 */
 	@Override
-	public Group get(final Long pk) throws NoSuchPersistedEntityException, PersistException {
-		assert pk != null;
-		
-		ResultSet rs = null;
-
-		try (final PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {
-			statement.setLong(1, pk);
-
-			rs = statement.executeQuery();
-
-			if (rs.next()) {
-				return readResultSet(rs);
-			} else {
-				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
-			}
-		} catch (final SQLException e) {
-			processSQLException(e);
-		} finally {
-			closeResultSet(rs);
-		}
-		
-		throw new PersistException(UNEXPECTED_POINT_EXECUTION);
+	protected String getSelectOneQuery() {
+		return SELECT_ONE;
 	}
 
-	/**
-	 * Update state of object
-	 * @param group
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
-	 * @throws edu.library.exceptions.ValidationException
-	 */
 	@Override
-	public void update(final Group group) throws ValidException, PersistException {
-		validate(group);
-
-		try (final PreparedStatement statement = connection.prepareStatement(UPDATE)) {
-			statement.setInt(1, group.getNumber());
-			statement.setString(2, group.getFacultyName());
-			statement.setLong(3, group.getId());
-
-			statement.executeUpdate();
-		} catch (final SQLException e) {
-			processSQLException(e);
-		}
+	protected String getCreateQuery() {
+		return INSERT;
 	}
 
-	/**
-	 * Create new record. Also change primary key of object.
-	 * @param group
-	 * @throws PersistException 
-	 * @throws SQLException
-	 * @throws edu.library.exceptions.ValidationException
-	 */
 	@Override
-	public void create(final Group group) throws ValidException, PersistException {
-		validate(group);
+	protected String getUpdateQuery() {
+		return UPDATE;
+	}
 
-		try (final PreparedStatement statement = connection.prepareStatement(INSERT)) {
-			statement.setInt(1, group.getNumber());
-			statement.setString(2, group.getFacultyName());
-
-			statement.executeUpdate();
-		} catch (final SQLException e) {
-			processSQLException(e);
-		}
+	@Override
+	protected String getDeleteQuery() {
+		return DELETE;
 	}
 	
 	/**
-	 * Create (if id == null) or update (if id != null)
-	 * @param group
-	 * @throws ValidException
-	 * @throws PersistException 
-	 * @throws SQLException
+	 * Handle exception on delete method
 	 */
 	@Override
-	public void createOrUpdate(final Group group) throws ValidException, PersistException {
-		if (group.getId() == null) {
-			create(group);
-		} else {
-			update(group);
-		}
-	}
-
-	/**
-	 * Delete record about object from DB
-	 * @param pk
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
-	 */
-	@Override
-	public void delete(final Long pk) throws PersistException {
-		assert pk != null;
-		
-		try (final PreparedStatement statement = connection.prepareStatement(DELETE)) {
-			statement.setLong(1, pk);
-			statement.execute();
-		} catch (final SQLException e) {
-			processDeleteException(e);
-		}
-	}
-
-	// Read and create instance of object from ResultSet object
-	private Group readResultSet(final ResultSet rs) throws SQLException {
-		final Group group = new Group();
-
-		group.setId(rs.getLong(GROUP_ID));
-		group.setNumber(rs.getInt(GROUP_NUMBER));
-		group.setFacultyName(rs.getString(GROUP_FACULTY_NAME));
-
-		return group;
-	}
-	
-	// Handle exception on delete method
-	private void processDeleteException(final SQLException e) throws PersistException {
+	protected void processDeleteException(final SQLException e) throws PersistException {
 		// If one or more students refer to group - show readable message. Else - show standard message.
 		final String exc = e.getLocalizedMessage().toLowerCase();
 		
@@ -195,6 +95,31 @@ public class HSQLDBGroupDao extends AbstractJDBCDao implements GroupDao {
 	    }
 		
 		processSQLException(e);
+	}
+	
+	@Override
+	protected void prepareStatementForCreate(final PreparedStatement statement,
+			final Group group) throws SQLException {
+		prepareStatement(statement, group);
+	}
+	
+	@Override
+	protected void prepareStatementForUpdate(final PreparedStatement statement,
+			final Group group) throws SQLException {
+		final int i = prepareStatement(statement, group);
+		
+		statement.setLong(i, group.getId());
+	}
+	
+	// Fill PreparedStatement by parameters of entity
+	private int prepareStatement(final PreparedStatement statement,
+			final Group group) throws SQLException {
+		int i = 1;
+		
+		statement.setInt(i++, group.getNumber());
+		statement.setString(i++, group.getFacultyName());
+		
+		return i;
 	}
 	
 }

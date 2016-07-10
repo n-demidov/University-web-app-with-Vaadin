@@ -16,7 +16,7 @@ import com.demidov.university.model.persistence.dao.interfaces.StudentDao;
 import com.demidov.university.model.persistence.entity.Group;
 import com.demidov.university.model.persistence.entity.Student;
 
-public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
+public class HSQLDBStudentDao extends GeneralJDBCDao<Student, Long> implements StudentDao{
 	
 	private static final String STUDENT_ID = "id", STUDENT_NAME = "name", STUDENT_LAST_NAME = "last_name",
 			STUDENT_MIDDLE_NAME = "middle_name", STUDENT_BIRTH_DATE = "birth_date", STUDENT_GROUP_ID = "group_id";
@@ -38,8 +38,6 @@ public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
 	private static final String FILTER_BY_LASTNAME = " AND (LOWER(s.last_name) LIKE ?)";
 	private static final String FILTER_BY_GROUP_NUMBER = " AND (g.group_number = ?)";
 	private static final String ANY_CHARS = "%";
-	
-	private static final String NO_SUCH_ENTITY_IN_DB = "В базе данных нет студента с id = %d";
 
 	private static HSQLDBStudentDao instance;
 	private static final Logger logger = Logger.getLogger(HSQLDBStudentDao.class.getName());
@@ -53,60 +51,6 @@ public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
 	private HSQLDBStudentDao() {
 		super();
 	}
-
-	/**
-	 * Find all objects
-	 * @return
-	 * @throws SQLException
-	 */
-	@Override
-	public List<Student> getAll() throws PersistException {
-		final List<Student> result = new ArrayList<>();
-
-		try (final PreparedStatement statement = connection.prepareStatement(SELECT);
-			 final ResultSet rs = statement.executeQuery()) {
-			while (rs.next()) {
-				result.add(readResultSet(rs));
-			}
-		} catch (final SQLException e) {
-			processSQLException(e);
-		}
-
-		return result;
-	}
-
-	/**
-	 * Find object with such id in DB
-	 * @param id
-	 * @return
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
-	 * @throws NoSuchPersistedEntityException.library.exceptions.db.NoSuchEntityInDB
-	 */
-	@Override
-	public Student get(final Long pk) throws NoSuchPersistedEntityException, PersistException {
-		assert pk != null;
-		
-		ResultSet rs = null;
-
-		try (final PreparedStatement statement = connection.prepareStatement(SELECT_ONE)) {
-			statement.setLong(1, pk);
-
-			rs = statement.executeQuery();
-
-			if (rs.next()) {
-				return readResultSet(rs);
-			} else {
-				throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
-			}
-		} catch (final SQLException e) {
-			processSQLException(e);
-		} finally {
-			closeResultSet(rs);
-		}
-		
-		throw new PersistException(UNEXPECTED_POINT_EXECUTION);
-	}
 	
 	/**
 	 * Flexible filter by student.lastname and student.group.number.
@@ -115,7 +59,7 @@ public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
 	 */
 	@Override
 	public List<Student> filter(final StudentFilterParams filterParams) throws PersistException {
-		final List<Student> result = new ArrayList<>();
+		List<Student> students = new ArrayList<>();
 		
 		ResultSet rs = null;
         int i = 1;
@@ -156,10 +100,8 @@ public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
 
             // Execute SQL query
             rs = statement.executeQuery();
-            while (rs.next())
-            {
-            	result.add(readResultSet(rs));
-            }
+            
+            students = parseResultSet(rs);
         } catch (final SQLException e) {
         	processSQLException(e);
 		} finally
@@ -167,108 +109,87 @@ public class HSQLDBStudentDao extends AbstractJDBCDao implements StudentDao{
             closeResultSet(rs);
         }
 		
-		return result;
-	}
-
-	/**
-	 * Update state of object
-	 * @param student
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
-	 * @throws edu.library.exceptions.ValidationException
-	 */
-	public void update(final Student student) throws ValidException, PersistException {
-		 validate(student);
-		
-		try (final PreparedStatement statement = connection.prepareStatement(UPDATE)) {
-			statement.setString(1, student.getName());
-			statement.setString(2, student.getLastName());
-			statement.setString(3, student.getMiddleName());
-			statement.setDate(4, new java.sql.Date(student.getBirthDate().getTime()));
-			statement.setLong(5, student.getGroup().getId());
-			
-			statement.setLong(6, student.getId());
-
-			statement.executeUpdate();
-		} catch (final SQLException e) {
-			processSQLException(e);
-		}
-	}
-
-	/**
-	 * Create new record. Also change primary key of object.
-	 * @param group
-	 * @throws PersistException 
-	 * @throws SQLException
-	 * @throws edu.library.exceptions.ValidationException
-	 */
-	@Override
-	public void create(final Student student) throws ValidException, PersistException {
-		 validate(student);
-
-		try (final PreparedStatement statement = connection.prepareStatement(INSERT)) {
-			statement.setString(1, student.getName());
-			statement.setString(2, student.getLastName());
-			statement.setString(3, student.getMiddleName());
-			statement.setDate(4, new java.sql.Date(student.getBirthDate().getTime()));
-			statement.setLong(5, student.getGroup().getId());
-
-			statement.executeUpdate();
-		} catch (final SQLException e) {
-			processSQLException(e);
-		}
+		return students;
 	}
 	
-	/**
-	 * Create (if id == null) or update (if id != null)
-	 * @param student
-	 * @throws ValidException
-	 * @throws PersistException 
-	 * @throws SQLException
-	 */
 	@Override
-	public void createOrUpdate(final Student student) throws ValidException, PersistException {
-		if (student.getId() == null) {
-			create(student);
-		} else {
-			update(student);
-		}
+	protected String getSelectQuery() {
+		return SELECT;
+	}
+
+	@Override
+	protected String getSelectOneQuery() {
+		return SELECT_ONE;
+	}
+
+	@Override
+	protected String getCreateQuery() {
+		return INSERT;
+	}
+
+	@Override
+	protected String getUpdateQuery() {
+		return UPDATE;
+	}
+
+	@Override
+	protected String getDeleteQuery() {
+		return DELETE;
 	}
 
 	/**
-	 * Delete record about object from DB
-	 * @param id
-	 * @throws PersistException 
-	 * @throws java.sql.SQLException
+	 * Read and create instance of entity from ResultSet object
 	 */
 	@Override
-	public void delete(final Long pk) throws PersistException {
-		assert pk != null;
-		
-		try (final PreparedStatement statement = connection.prepareStatement(DELETE)) {
-			statement.setLong(1, pk);
-			statement.execute();
-		} catch (final SQLException e) {
-			processSQLException(e);
+	protected List<Student> parseResultSet(final ResultSet rs) throws SQLException {
+		final List<Student> students = new ArrayList<>();
+
+		while (rs.next()) {
+			final Group group = new Group();
+			group.setId(rs.getLong(STUDENT_GROUP_ID));
+			group.setNumber(rs.getInt(GROUP_NUMBER));
+			group.setFacultyName(rs.getString(GROUP_FACULTY_NAME));
+			
+			final Student student = new Student();
+			student.setId(rs.getLong(STUDENT_ID));
+			student.setName(rs.getString(STUDENT_NAME));
+			student.setLastName(rs.getString(STUDENT_LAST_NAME));
+			student.setMiddleName(rs.getString(STUDENT_MIDDLE_NAME));
+			student.setBirthDate(rs.getDate(STUDENT_BIRTH_DATE));
+			student.setGroup(group);
+
+			students.add(student);
 		}
+
+		return students;
 	}
-
-	// Read and create instance of object from ResultSet object
-	private Student readResultSet(final ResultSet rs) throws SQLException {
-		final Group group = new Group();
-		group.setId(rs.getLong(STUDENT_GROUP_ID));
-		group.setNumber(rs.getInt(GROUP_NUMBER));
-		group.setFacultyName(rs.getString(GROUP_FACULTY_NAME));
+	
+	@Override
+	protected void prepareStatementForCreate(final PreparedStatement statement,
+			final Student student) throws SQLException {
+		fillQuery(statement, student);
+	}
+	
+	@Override
+	protected void prepareStatementForUpdate(final PreparedStatement statement,
+			final Student student) throws SQLException {
+		final int i = fillQuery(statement, student);
 		
-		final Student student = new Student();
-		student.setId(rs.getLong(STUDENT_ID));
-		student.setName(rs.getString(STUDENT_NAME));
-		student.setLastName(rs.getString(STUDENT_LAST_NAME));
-		student.setMiddleName(rs.getString(STUDENT_MIDDLE_NAME));
-		student.setBirthDate(rs.getDate(STUDENT_BIRTH_DATE));
-		student.setGroup(group);
-
-		return student;
+		statement.setLong(i, student.getId());
+	}
+	
+	// Fill PreparedStatement by parameters of entity
+	private int fillQuery(final PreparedStatement statement,
+			final Student student) throws SQLException {
+		int i = 1;
+		
+		statement.setString(i++, student.getName());
+		statement.setString(i++, student.getLastName());
+		statement.setString(i++, student.getMiddleName());
+		statement.setDate(i++, convertDate(student.getBirthDate()));
+		statement.setLong(i++, student.getGroup().getId());
+		
+		return i;
 	}
 
 }
