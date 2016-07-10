@@ -62,14 +62,14 @@ public class StudentsView extends AbstractView<Student> {
 		initFields();
 		initLayouts();
 		initListeners();
-
-		updateList();
 	}
 
 	@Override
 	public void enter(final ViewChangeEvent event) {
 		super.enter(event);
 		Page.getCurrent().setTitle(PAGE_TITLE);
+		
+		updateList();
 	}
 
 	/**

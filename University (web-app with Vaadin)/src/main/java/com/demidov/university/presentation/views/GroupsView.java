@@ -31,14 +31,14 @@ public class GroupsView extends AbstractView<Group> {
 		
 		initFields();
 		initLayouts();
-
-		updateList();
 	}
 
 	@Override
     public void enter(final ViewChangeEvent event) {
 		super.enter(event);
 		Page.getCurrent().setTitle(PAGE_TITLE);
+		
+		updateList();
     }
 	
 	/**
