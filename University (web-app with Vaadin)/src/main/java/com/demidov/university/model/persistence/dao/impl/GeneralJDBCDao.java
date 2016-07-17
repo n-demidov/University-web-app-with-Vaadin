@@ -129,11 +129,11 @@ public abstract class GeneralJDBCDao<T extends GeneralEntity<PK>, PK extends Ser
 	 */
 	@Override
 	public void create(final T entity) throws PersistException, ValidException {
-		validate(entity);
-		
-	    if (entity.getPk() != null) {
+		if (entity.getPk() != null) {
 	        throw new PersistException(ENTITY_IS_ALREADY_PERSIST);
 	    }
+		
+		validate(entity);	// call validation for entity
 		
 	    final String sql = getCreateQuery();
 	    
