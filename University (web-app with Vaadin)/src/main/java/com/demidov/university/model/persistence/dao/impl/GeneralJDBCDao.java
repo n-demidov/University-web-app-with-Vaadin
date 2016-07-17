@@ -99,10 +99,10 @@ public abstract class GeneralJDBCDao<T extends GeneralEntity<PK>, PK extends Ser
 		}
         
         if (entities == null || entities.size() == 0) {
-        	 throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
+        	throw new NoSuchPersistedEntityException(String.format(NO_SUCH_ENTITY_IN_DB, pk));
         }
         if (entities.size() > 1) {
-            throw new PersistException(RECEIVED_MORE_THAN_ONE_RECORD_ERR);
+        	throw new PersistException(RECEIVED_MORE_THAN_ONE_RECORD_ERR);
         }
         return entities.iterator().next();
 	}
