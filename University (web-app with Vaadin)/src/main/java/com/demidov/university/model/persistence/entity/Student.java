@@ -6,26 +6,28 @@ import java.util.Date;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 public class Student extends GeneralEntity<Long> implements Serializable, Cloneable {
 
 	private Long id;
-	
-	@NotNull(message="Поле должно быть задано")
-	@Size(min = 2, max = 60, message="Поле должно быть от 2 до 60 символов")
+
+	@NotEmpty(message = "{common.set.error}")
+	@Size(min = 2, max = 60, message = "{common.size.error}")
 	private String name;
-	
-	@NotNull(message="Поле должно быть задано")
-	@Size(min = 2, max = 60, message="Поле должно быть от 2 до 60 символов")
+
+	@NotEmpty(message = "{common.set.error}")
+	@Size(min = 2, max = 70, message = "{common.size.error}")
 	private String lastName;
-	
-	@NotNull(message="Поле должно быть задано")
-	@Size(min = 2, max = 60, message="Поле должно быть от 2 до 60 символов")
+
+	@NotEmpty(message = "{common.set.error}")
+	@Size(min = 2, max = 60, message = "{common.size.error}")
 	private String middleName;
-	
-	@NotNull(message="Поле должно быть задано")
+
+	@NotNull(message = "{common.set.error}")
 	private Date birthDate;
-	
-	@NotNull(message="Поле должно быть задано")
+
+	@NotNull(message = "{common.set.error}")
 	private Group group;
 
 	public Long getId() {
@@ -78,8 +80,7 @@ public class Student extends GeneralEntity<Long> implements Serializable, Clonea
 
 	@Override
 	public String toString() {
-		return "Student [id=" + id + ", name=" + name + ", lastName=" + lastName + ", middleName=" + middleName
-				+ ", birthDate=" + birthDate + ", group=" + group + "]";
+		return "Student [id=" + id + ", name=" + name + ", lastName=" + lastName + ", middleName=" + middleName + ", birthDate=" + birthDate + ", group=" + group + "]";
 	}
 
 	@Override
@@ -106,7 +107,7 @@ public class Student extends GeneralEntity<Long> implements Serializable, Clonea
 		if (!(obj instanceof Student)) {
 			return false;
 		}
-		Student other = (Student) obj;
+		final Student other = (Student) obj;
 		if (id == null) {
 			if (other.id != null) {
 				return false;

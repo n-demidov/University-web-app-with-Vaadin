@@ -2,21 +2,22 @@ package com.demidov.university.model.persistence.entity;
 
 import java.io.Serializable;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class Group extends GeneralEntity<Long> implements Serializable, Cloneable {
 
 	private Long id;
 
-	@NotNull(message="Поле должно быть задано")
-	@Min(value=1, message="Поле должно быть не меньше 1")
+	@NotNull(message = "{common.set.error}")
+	@Min(value = 1, message = "{common.min.error}")
 	private int number;
 
-	@NotNull(message="Поле должно быть задано")
-	@Size(min = 1, max = 255, message="Поле должно быть от 1 до 255 символов")
+	@NotEmpty(message = "{common.set.error}")
+	@Size(min = 1, max = 255, message = "{common.size.error}")
 	private String facultyName;
 
 	public Long getId() {
@@ -66,7 +67,7 @@ public class Group extends GeneralEntity<Long> implements Serializable, Cloneabl
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -76,7 +77,7 @@ public class Group extends GeneralEntity<Long> implements Serializable, Cloneabl
 		if (!(obj instanceof Group)) {
 			return false;
 		}
-		Group other = (Group) obj;
+		final Group other = (Group) obj;
 		if (id == null) {
 			if (other.id != null) {
 				return false;
